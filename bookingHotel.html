@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grok Hotel Booking System</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 20px; background: #f0f8ff; }
+        .bill { background: white; margin: 20px auto; padding: 20px; border-radius: 15px; max-width: 500px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; }
+        button { padding: 10px 20px; font-size: 18px; background: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Hotel Booking System</h1>
+    <div id="output" class="bill"></div>
+
+    <script>
+        const rooms = [
+            { id: 1, type: "Single Room", price: 50, bookedDates: [5,6,7,12,13] },
+            { id: 2, type: "Double Room", price: 80, bookedDates: [10,11,12,13,14,15] },
+            { id: 3, type: "Deluxe Room", price: 120, bookedDates: [1,2,20] },
+            { id: 4, type: "Suite", price: 200, bookedDates: [] },
+            { id: 5, type: "Penthouse", price: 500, bookedDates: [25,26] }
+        ];
+
+        const extras = [
+            { id: 1, name: "Breakfast", pricePerDay: 15 },
+            { id: 2, name: "WiFi", pricePerDay: 10 },
+            { id: 3, name: "Parking", pricePerDay: 20 }
+        ];
+
+        alert("Welcome to Grok Hotel!");
+
+        let customerName = prompt("Your name:");
+        let guests = prompt("Number of guests:");
+        let checkIn = parseInt(prompt("Check-in day (1-30):"));
+        let checkOut = parseInt(prompt("Check-out day (1-30):"));
+
+        if (!customerName || !guests || !checkIn || !checkOut || checkIn >= checkOut) {
+            document.getElementById("output").innerHTML = "<h2>Invalid input! Refresh and try again.</h2>";
+        } else {
+            let stayDates = [];
+            for (let d = checkIn; d < checkOut; d++) stayDates.push(d);
+
+            let availableRooms = rooms.filter(room => 
+                !stayDates.some(date => room.bookedDates.includes(date))
+            );
+
+            let roomPrompt = "Available rooms:\n\n";
+            availableRooms.forEach(r => roomPrompt += `${r.id}. ${r.type} → $${r.price}/night\n`);
+            roomPrompt += "\nChoose room number:";
+            let roomChoice = parseInt(prompt(roomPrompt));
+            let selectedRoom = availableRooms.find(r => r.id === roomChoice);
+
+            if (!selectedRoom) {
+                document.getElementById("output").innerHTML = "<h2>Invalid room! Refresh to retry.</h2>";
+            } else {
+                let selectedExtras = [];
+                while (true) {
+                    let extraChoice = parseInt(prompt("Add extras (0 to finish):\n1. Breakfast $15\n2. WiFi $10\n3. Parking $20\n\nEnter number:"));
+                    if (extraChoice === 0) break;
+                    let extra = extras.find(e => e.id === extraChoice);
+                    if (extra) selectedExtras.push(extra);
+                }
+
+                let nights = checkOut - checkIn;
+                let roomCost = selectedRoom.price * nights;
+                let extrasCost = selectedExtras.reduce((sum, e) => sum + e.pricePerDay * nights, 0);
+                let total = roomCost + extrasCost;
+
+                document.getElementById("output").innerHTML = `
+                    <h2>Booking Confirmed, ${customerName}!</h2>
+                    <p><strong>${guests} guests • ${nights} nights</strong></p>
+                    <h3>${selectedRoom.type} × $${selectedRoom.price}/night = $${roomCost}</h3>
+                    ${selectedExtras.length > 0 ? 
+                        "<p><strong>Extras:</strong><br>" + 
+                        selectedExtras.map(e => `• ${e.name} (+$${e.pricePerDay}/day)`).join("<br>") +
+                        `<br><strong>Extras: $${extrasCost}</strong></p>` 
+                        : "<p>No extras</p>"
+                    }
+                    <hr>
+                    <h1 style="color:#e74c3c">TOTAL: $${total}</h1>
+                    <h3 style="color:green">Enjoy your stay! ❤️</h3>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
